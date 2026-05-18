@@ -92,7 +92,6 @@ class AddTripActivity : AppCompatActivity() {
                 if (tripId != -1) {
                     loadTripData(editDestination, editVehicle, editStartKm, editEndKm, editDate, editTime, editNotes, vehicles)
                 } else if (preSelectedVehicleId != 0) {
-                    // Set kendaraan dan KUNCI agar tidak bisa diubah lagi
                     val vehicle = vehicles.find { it.id == preSelectedVehicleId }
                     vehicle?.let {
                         selectedVehicleId = it.id
@@ -106,7 +105,6 @@ class AddTripActivity : AppCompatActivity() {
                             editEndKm.setText(roundedEndKm.toString())
                         }
                     }
-                    // Langsung arahkan fokus ke Tujuan agar cepat
                     editDestination.requestFocus()
                 }
 
@@ -117,7 +115,6 @@ class AddTripActivity : AppCompatActivity() {
                         selectedVehicleId = it.id
                         val startVal = it.currentOdometer
                         editStartKm.setText(startVal.toString())
-                        
                         if (liveDistance > 0) {
                             val roundedEndKm = Math.round((startVal + liveDistance) * 10.0) / 10.0
                             editEndKm.setText(roundedEndKm.toString())
@@ -180,27 +177,34 @@ class AddTripActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Hitung Durasi dalam Milidetik jika input manual
             val hours = editDurationHours.text.toString().toLongOrNull() ?: 0L
             val minutes = editDurationMinutes.text.toString().toLongOrNull() ?: 0L
             val manualDuration = (hours * 3600 + minutes * 60) * 1000
 
-            val trip = Trip(
-                id = if (tripId == -1) 0 else tripId,
-                date = calendar.timeInMillis,
-                vehicleId = selectedVehicleId,
-                startKm = startKm,
-                endKm = endKm,
-                destination = dest,
-                durationMillis = if (tripId == -1) {
-                    if (liveDuration > 0) liveDuration else manualDuration
-                } else 0,
-                weightedDistance = if (tripId == -1 && liveDistance > 0) liveAdjustedDistance else null,
-                notes = if (notes.isBlank()) null else notes
-            )
-
             lifecycleScope.launch {
                 val db = AppDatabase.getDatabase(this@AddTripActivity)
+                val existingTrip = if (tripId != -1) db.tripDao().getTripById(tripId) else null
+
+                val trip = Trip(
+                    id = if (tripId == -1) 0 else tripId,
+                    date = calendar.timeInMillis,
+                    vehicleId = selectedVehicleId,
+                    startKm = startKm,
+                    endKm = endKm,
+                    destination = dest,
+                    durationMillis = if (tripId == -1) {
+                        if (liveDuration > 0) liveDuration else manualDuration
+                    } else {
+                        existingTrip?.durationMillis ?: 0L
+                    },
+                    weightedDistance = if (tripId == -1) {
+                        if (liveDistance > 0 && liveAdjustedDistance > 0) liveAdjustedDistance else null
+                    } else {
+                        existingTrip?.weightedDistance
+                    },
+                    notes = if (notes.isBlank()) null else notes
+                )
+
                 if (tripId == -1) {
                     val insertedId = db.tripDao().insert(trip).toInt()
                     val routeSnapshot = LocationService.getRoutePointsSnapshot()
@@ -217,9 +221,7 @@ class AddTripActivity : AppCompatActivity() {
                         LocationService.clearRoutePoints()
                     }
                 } else {
-                    // Jika edit, kita ambil durationMillis yang lama agar tidak hilang
-                    val existing = db.tripDao().getTripById(tripId)
-                    db.tripDao().update(trip.copy(durationMillis = existing?.durationMillis ?: 0))
+                    db.tripDao().update(trip)
                 }
                 
                 db.vehicleDao().updateOdometerById(selectedVehicleId, endKm)
@@ -261,14 +263,12 @@ class AddTripActivity : AppCompatActivity() {
                 calendar.timeInMillis = it.date
                 updateDateTimeLabels(date, time)
                 
-                // Load Durasi jika ada
                 if (it.durationMillis > 0) {
                     val h = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(it.durationMillis)
                     val m = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(it.durationMillis) % 60
                     findViewById<TextInputEditText>(R.id.editDurationHours).setText(h.toString())
                     findViewById<TextInputEditText>(R.id.editDurationMinutes).setText(m.toString())
                 }
-
                 notes.setText(it.notes ?: "")
             }
         }

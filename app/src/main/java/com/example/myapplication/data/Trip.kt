@@ -12,7 +12,7 @@ data class Trip(
     val startKm: Double,
     val endKm: Double,
     val destination: String,
-    val durationMillis: Long = 0, // Tambahan untuk waktu tempuh
-    val weightedDistance: Double? = null, // Jarak yang disesuaikan beban mesin
+    val durationMillis: Long = 0,
+    val weightedDistance: Double? = null,
     val notes: String? = null
 )

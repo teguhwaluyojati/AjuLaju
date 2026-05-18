@@ -88,20 +88,35 @@ class StatisticsActivity : AppCompatActivity() {
         var latestTrips: List<com.example.myapplication.data.TripWithVehicle> = emptyList()
         var latestVehicles: List<com.example.myapplication.data.Vehicle> = emptyList()
 
+        fun resolveEfficiency(vehicle: com.example.myapplication.data.Vehicle?): Double {
+            val calculated = vehicle?.calculatedEfficiency ?: 0.0
+            if (calculated > 0) return calculated
+            val manual = vehicle?.manualEfficiency ?: 0.0
+            return if (manual > 0) manual else 12.0
+        }
+
         fun updateSummary() {
-            if (latestTrips.isEmpty() || latestVehicles.isEmpty()) {
+            if (latestTrips.isEmpty()) {
                 textSummaryPerVehicle.text = "Belum ada data perjalanan."
                 return
             }
 
-            val grouped = latestTrips.groupBy { it.vehicleId }
-            val lines = grouped.map { (vehicleId, trips) ->
-                val distance = trips.sumOf { it.endKm - it.startKm }
-                val weightedDistanceSum = trips.sumOf { it.weightedDistance ?: (it.endKm - it.startKm) }
-                val vehicle = latestVehicles.find { it.id == vehicleId }
-                val vehicleName = vehicle?.name ?: "-"
-                val eff = vehicle?.calculatedEfficiency ?: vehicle?.manualEfficiency ?: 12.0
-                val fuelUsed = if (eff > 0) weightedDistanceSum / eff else 0.0
+            val vehicleById = latestVehicles.associateBy { it.id }
+            val tripByVehicle = latestTrips.groupBy { it.vehicleId }
+
+            val lines = tripByVehicle.map { (vehicleId, trips) ->
+                val distance = trips.sumOf { it.endKm - it.startKm }.coerceAtLeast(0.0)
+                
+                // Hitung total weighted distance, tapi filter data 0.0 yang tidak valid
+                val weightedDistanceSum = trips.sumOf { 
+                    if (it.weightedDistance != null && it.weightedDistance > 0) it.weightedDistance else (it.endKm - it.startKm)
+                }.coerceAtLeast(0.0)
+
+                val vehicle = vehicleById[vehicleId]
+                val vehicleName = vehicle?.name ?: trips.firstOrNull()?.vehicleName ?: "-"
+                val eff = resolveEfficiency(vehicle)
+                val fuelUsed = if (weightedDistanceSum > 0 && eff > 0) weightedDistanceSum / eff else 0.0
+
                 String.format(
                     Locale.getDefault(),
                     "• %s: %.1f km, %.2f L",
@@ -116,11 +131,15 @@ class StatisticsActivity : AppCompatActivity() {
 
         // Observe Costs for Pie Chart
         db.costDao().getAllCosts().asLiveData().observe(this) { costs ->
-            if (costs.isNullOrEmpty()) return@observe
-            
+            if (costs.isNullOrEmpty()) {
+                pieChart.clear()
+                pieChart.invalidate()
+                return@observe
+            }
+
             val typeMap = costs.groupBy { it.type }.mapValues { entry -> entry.value.sumOf { it.amount } }
             val entries = typeMap.map { PieEntry(it.value.toFloat(), it.key) }
-            
+
             val dataSet = PieDataSet(entries, "Kategori Biaya")
             dataSet.colors = listOf(
                 primary,
@@ -132,7 +151,7 @@ class StatisticsActivity : AppCompatActivity() {
             )
             dataSet.valueTextColor = onSurface
             dataSet.valueTextSize = 14f
-            
+
             pieChart.data = PieData(dataSet)
             pieChart.description.isEnabled = false
             pieChart.centerText = "Biaya"
@@ -142,14 +161,18 @@ class StatisticsActivity : AppCompatActivity() {
 
         // Observe Trips for Bar Chart
         db.tripDao().getAllTrips().asLiveData().observe(this) { trips ->
-            if (trips.isNullOrEmpty()) return@observe
-            
+            latestTrips = trips ?: emptyList()
+            updateSummary()
+            if (trips.isNullOrEmpty()) {
+                barChart.clear()
+                barChart.invalidate()
+                return@observe
+            }
+
             // Ambil 7 trip terakhir
             val lastTrips = trips.take(7).reversed()
-            val entries = lastTrips.mapIndexed { index, trip -> 
-                BarEntry(index.toFloat(), (trip.endKm - trip.startKm).toFloat()) 
-            }
-            
+            val entries = lastTrips.mapIndexed { index, trip -> BarEntry(index.toFloat(), (trip.endKm - trip.startKm).toFloat()) }
+
             val dataSet = BarDataSet(entries, "Jarak (km)")
             dataSet.color = primary
             dataSet.valueTextColor = onSurface
@@ -158,9 +181,6 @@ class StatisticsActivity : AppCompatActivity() {
             barChart.description.isEnabled = false
             barChart.animateY(1000)
             barChart.invalidate()
-
-            latestTrips = trips
-            updateSummary()
         }
 
         db.vehicleDao().getAllVehicles().asLiveData().observe(this) { vehicles ->
