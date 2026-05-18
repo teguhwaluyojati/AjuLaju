@@ -7,6 +7,12 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/copilotDiffState.xml
+/.idea/shelf
+/.idea/dictionaries
+/.idea/httpRequests
+/.idea/dataSources
+/.idea/dataSources.local.xml
 .DS_Store
 /build
 /captures
