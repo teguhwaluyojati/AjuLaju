@@ -131,12 +131,14 @@ class TripDetailActivity : AppCompatActivity() {
 
                     val startMarker = Marker(mapView).apply {
                         position = geoPoints.first()
-                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        icon = androidx.core.content.ContextCompat.getDrawable(this@TripDetailActivity, R.drawable.ic_flag_start)
+                        setAnchor(0.2f, 0.9f)
                         title = "Start"
                     }
                     val endMarker = Marker(mapView).apply {
                         position = geoPoints.last()
-                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        icon = androidx.core.content.ContextCompat.getDrawable(this@TripDetailActivity, R.drawable.ic_flag_finish)
+                        setAnchor(0.2f, 0.9f)
                         title = "Finish"
                     }
                     mapView.overlays.add(startMarker)
