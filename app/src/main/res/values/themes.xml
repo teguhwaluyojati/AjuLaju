@@ -4,6 +4,7 @@
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:statusBarColor">?attr/colorPrimaryContainer</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
