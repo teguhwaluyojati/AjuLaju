@@ -16,16 +16,19 @@ import com.example.myapplication.data.RoutePoint
 import com.example.myapplication.data.Trip
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 class AddTripActivity : AppCompatActivity() {
 
-    private var selectedDate: Long = System.currentTimeMillis()
+    private var calendar = Calendar.getInstance()
     private var tripId: Int = -1
     private var liveDistance: Double = 0.0
     private var liveAdjustedDistance: Double = 0.0
@@ -62,7 +65,10 @@ class AddTripActivity : AppCompatActivity() {
         val layoutVehicle = findViewById<TextInputLayout>(R.id.layoutVehicle)
         val editStartKm = findViewById<TextInputEditText>(R.id.editStartKm)
         val editEndKm = findViewById<TextInputEditText>(R.id.editEndKm)
+        val editDurationHours = findViewById<TextInputEditText>(R.id.editDurationHours)
+        val editDurationMinutes = findViewById<TextInputEditText>(R.id.editDurationMinutes)
         val editDate = findViewById<TextInputEditText>(R.id.editDate)
+        val editTime = findViewById<TextInputEditText>(R.id.editTime)
         val editNotes = findViewById<TextInputEditText>(R.id.editNotes)
         val btnSave = findViewById<MaterialButton>(R.id.btnSave)
 
@@ -84,7 +90,7 @@ class AddTripActivity : AppCompatActivity() {
                 editVehicle.setAdapter(adapter)
                 
                 if (tripId != -1) {
-                    loadTripData(editDestination, editVehicle, editStartKm, editEndKm, editDate, editNotes, vehicles)
+                    loadTripData(editDestination, editVehicle, editStartKm, editEndKm, editDate, editTime, editNotes, vehicles)
                 } else if (preSelectedVehicleId != 0) {
                     // Set kendaraan dan KUNCI agar tidak bisa diubah lagi
                     val vehicle = vehicles.find { it.id == preSelectedVehicleId }
@@ -122,19 +128,39 @@ class AddTripActivity : AppCompatActivity() {
             }
         }
 
-        // Setup Date Picker
-        updateDateLabel(editDate)
+        // Setup Date & Time Picker
+        updateDateTimeLabels(editDate, editTime)
         editDate.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Pilih Tanggal")
-                .setSelection(selectedDate)
+                .setSelection(calendar.timeInMillis)
                 .build()
 
             datePicker.addOnPositiveButtonClickListener { selection ->
-                selectedDate = selection
-                updateDateLabel(editDate)
+                val dateCalendar = Calendar.getInstance()
+                dateCalendar.timeInMillis = selection
+                calendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR))
+                calendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH))
+                calendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH))
+                updateDateTimeLabels(editDate, editTime)
             }
             datePicker.show(supportFragmentManager, "DATE_PICKER")
+        }
+
+        editTime.setOnClickListener {
+            val timePicker = MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(calendar.get(Calendar.HOUR_OF_DAY))
+                .setMinute(calendar.get(Calendar.MINUTE))
+                .setTitleText("Pilih Waktu Berangkat")
+                .build()
+
+            timePicker.addOnPositiveButtonClickListener {
+                calendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
+                calendar.set(Calendar.MINUTE, timePicker.minute)
+                updateDateTimeLabels(editDate, editTime)
+            }
+            timePicker.show(supportFragmentManager, "TIME_PICKER")
         }
 
         btnSave.setOnClickListener {
@@ -154,15 +180,22 @@ class AddTripActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // Hitung Durasi dalam Milidetik jika input manual
+            val hours = editDurationHours.text.toString().toLongOrNull() ?: 0L
+            val minutes = editDurationMinutes.text.toString().toLongOrNull() ?: 0L
+            val manualDuration = (hours * 3600 + minutes * 60) * 1000
+
             val trip = Trip(
                 id = if (tripId == -1) 0 else tripId,
-                date = selectedDate,
+                date = calendar.timeInMillis,
                 vehicleId = selectedVehicleId,
                 startKm = startKm,
                 endKm = endKm,
                 destination = dest,
-                durationMillis = if (tripId == -1) liveDuration else 0,
-                weightedDistance = if (tripId == -1) liveAdjustedDistance else null,
+                durationMillis = if (tripId == -1) {
+                    if (liveDuration > 0) liveDuration else manualDuration
+                } else 0,
+                weightedDistance = if (tripId == -1 && liveDistance > 0) liveAdjustedDistance else null,
                 notes = if (notes.isBlank()) null else notes
             )
 
@@ -211,6 +244,7 @@ class AddTripActivity : AppCompatActivity() {
         start: TextInputEditText,
         end: TextInputEditText,
         date: TextInputEditText,
+        time: TextInputEditText,
         notes: TextInputEditText,
         vehicles: List<com.example.myapplication.data.Vehicle>
     ) {
@@ -224,15 +258,26 @@ class AddTripActivity : AppCompatActivity() {
                 }
                 start.setText(it.startKm.toString())
                 end.setText(it.endKm.toString())
-                selectedDate = it.date
-                updateDateLabel(date)
+                calendar.timeInMillis = it.date
+                updateDateTimeLabels(date, time)
+                
+                // Load Durasi jika ada
+                if (it.durationMillis > 0) {
+                    val h = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(it.durationMillis)
+                    val m = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(it.durationMillis) % 60
+                    findViewById<TextInputEditText>(R.id.editDurationHours).setText(h.toString())
+                    findViewById<TextInputEditText>(R.id.editDurationMinutes).setText(m.toString())
+                }
+
                 notes.setText(it.notes ?: "")
             }
         }
     }
 
-    private fun updateDateLabel(editText: TextInputEditText) {
-        val sdf = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
-        editText.setText(sdf.format(Date(selectedDate)))
+    private fun updateDateTimeLabels(dateEdit: TextInputEditText, timeEdit: TextInputEditText) {
+        val dateSdf = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+        val timeSdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        dateEdit.setText(dateSdf.format(calendar.time))
+        timeEdit.setText(timeSdf.format(calendar.time))
     }
 }

@@ -77,7 +77,7 @@ class TripDetailActivity : AppCompatActivity() {
             
             trip?.let { t ->
                 textDest.text = t.destination
-                val sdf = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("in", "ID"))
+                val sdf = SimpleDateFormat("EEEE, dd MMMM yyyy • HH:mm", Locale("in", "ID"))
                 textDate.text = sdf.format(Date(t.date))
                 
                 val distance = t.endKm - t.startKm
@@ -100,8 +100,8 @@ class TripDetailActivity : AppCompatActivity() {
 
                 textEff.text = String.format(Locale.getDefault(), "%.1f km/L", fuelEff)
                 
-                // Hitung total bensin yang habis (Gunakan weightedDistance jika ada)
-                val calculationDistance = t.weightedDistance ?: distance
+                // Hitung total bensin yang habis (Gunakan weightedDistance jika ada dan valid)
+                val calculationDistance = if (t.weightedDistance != null && t.weightedDistance > 0) t.weightedDistance else distance
                 val estimatedFuel = calculationDistance / fuelEff
                 textFuelUsed.text = String.format(Locale.getDefault(), "%.2f L", estimatedFuel)
 

@@ -363,9 +363,9 @@ class LocationService : Service() {
 
     private fun createNotification(content: String): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Vehicle Tracker")
+            .setContentTitle("AjuLaju Tracker")
             .setContentText(content)
-            .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+            .setSmallIcon(android.R.drawable.ic_media_play)
             .build()
     }
 }
