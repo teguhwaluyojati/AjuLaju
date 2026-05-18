@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="navigation_drawer_open">Buka menu navigasi</string>
+    <string name="navigation_drawer_close">Tutup menu navigasi</string>
+</resources>

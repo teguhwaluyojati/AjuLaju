@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication">
+        <service
+            android:name=".LocationService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
+        <activity
+            android:name=".TripDetailActivity"
+            android:exported="false"
+            android:label="Detail Perjalanan"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".ManageCostsActivity"
+            android:exported="false"
+            android:label="Riwayat Biaya"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".StatisticsActivity"
+            android:exported="false"
+            android:label="Statistik"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".AddCostActivity"
+            android:exported="false"
+            android:label="Catat Biaya"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".ManageVehiclesActivity"
+            android:exported="false"
+            android:label="Kelola Kendaraan"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".AddVehicleActivity"
+            android:exported="false"
+            android:label="Tambah Kendaraan"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".AddTripActivity"
+            android:exported="false"
+            android:label="Tambah Perjalanan"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
