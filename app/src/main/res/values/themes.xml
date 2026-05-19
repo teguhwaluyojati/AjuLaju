@@ -2,11 +2,17 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.MyApplication" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:forceDarkAllowed">false</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryContainer</item>
+        <item name="android:statusBarColor">@color/brand_purple_light</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <item name="colorPrimary">@color/brand_purple</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_purple_light</item>
+        <item name="colorOnPrimaryContainer">@color/brand_purple_dark</item>
+        <item name="android:colorBackground">@color/bg_light</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorSurfaceContainerLow">@color/bg_light</item>
     </style>
 
     <style name="Theme.MyApplication" parent="Base.Theme.MyApplication" />

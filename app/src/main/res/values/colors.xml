@@ -4,5 +4,13 @@
     <color name="white">#FFFFFFFF</color>
     <color name="dashboard_bg_start">#F4F7FF</color>
     <color name="dashboard_bg_mid">#FFFFFF</color>
-    <color name="dashboard_bg_end">#FFF7EE</color>
+    <color name="dashboard_bg_end">#F0F4FF</color>
+
+    <!-- Purple Palette from Image -->
+    <color name="brand_purple">#8A00FF</color>
+    <color name="brand_purple_dark">#7000D1</color>
+    <color name="brand_purple_light">#F5EBFF</color>
+    <color name="bg_light">#F8F7FF</color>
+    <color name="success_green_bg">#E7F9EF</color>
+    <color name="success_green_text">#00C569</color>
 </resources>

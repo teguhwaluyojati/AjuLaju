@@ -41,7 +41,6 @@ class TripAdapter(
         private val textKmRange: TextView = itemView.findViewById(R.id.textKmRange)
         private val textTotalKm: TextView = itemView.findViewById(R.id.textTotalKm)
         private val textNotes: TextView = itemView.findViewById(R.id.textNotes)
-        private val btnMore: ImageButton = itemView.findViewById(R.id.btnMore)
 
         fun bind(trip: TripWithVehicle) {
             val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
@@ -60,7 +59,8 @@ class TripAdapter(
 
             itemView.setOnClickListener { onClick(trip) }
 
-            btnMore.setOnClickListener { view ->
+            // Kita gunakan Long Click pada kartu untuk Edit/Delete agar tampilan tetap bersih sesuai gambar
+            itemView.setOnLongClickListener { view ->
                 val popup = PopupMenu(view.context, view)
                 popup.menu.add("Edit")
                 popup.menu.add("Hapus")
@@ -72,6 +72,7 @@ class TripAdapter(
                     true
                 }
                 popup.show()
+                true
             }
         }
     }
