@@ -40,14 +40,16 @@
 
             <TextView
                 android:id="@+id/textDate"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:textColor="#888888"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toEndOf="@id/dotPurple"
+                app:layout_constraintEnd_toStartOf="@id/textVehicle"
                 tools:text="17 MAY 2026" />
 
             <TextView
@@ -92,16 +94,19 @@
             <!-- Bottom Row -->
             <TextView
                 android:id="@+id/textKmRange"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
                 android:textColor="#888888"
                 android:textSize="12sp"
                 app:layout_constraintTop_toBottomOf="@id/iconLoc"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/cardTotalKm"
                 tools:text="52930.0 km - 52987.0 km" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTotalKm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
